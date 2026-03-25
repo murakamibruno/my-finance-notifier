@@ -6,6 +6,13 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+import java.util.Properties
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.myfinance.notifier"
     compileSdk = 36
@@ -20,10 +27,20 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(localProperties["RELEASE_STORE_FILE"] as String? ?: "")
+            storePassword = localProperties["RELEASE_STORE_PASSWORD"] as String? ?: ""
+            keyAlias = localProperties["RELEASE_KEY_ALIAS"] as String? ?: ""
+            keyPassword = localProperties["RELEASE_KEY_PASSWORD"] as String? ?: ""
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
