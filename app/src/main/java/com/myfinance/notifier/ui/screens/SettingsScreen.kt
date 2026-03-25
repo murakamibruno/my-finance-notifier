@@ -2,6 +2,8 @@ package com.myfinance.notifier.ui.screens
 
 import android.content.ComponentName
 import android.content.Intent
+import android.net.Uri
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -55,9 +57,11 @@ fun SettingsScreen(
     val context = LocalContext.current
 
     var serviceEnabled by remember { mutableStateOf(isNotificationListenerEnabled(context)) }
+    var batteryOptimized by remember { mutableStateOf(isBatteryOptimized(context)) }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         serviceEnabled = isNotificationListenerEnabled(context)
+        batteryOptimized = isBatteryOptimized(context)
     }
 
     var urlInput by remember(webhookUrl) { mutableStateOf(webhookUrl) }
@@ -196,6 +200,51 @@ fun SettingsScreen(
         ) {
             Text("Habilitar acesso a notificações")
         }
+
+        // Otimização de bateria
+        if (batteryOptimized) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFF59E0B).copy(alpha = 0.1f)
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = null,
+                            tint = Color(0xFFF59E0B),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            text = "Otimização de bateria ativa",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "O Android pode encerrar o serviço em segundo plano. Desabilite a otimização de bateria para este app.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = {
+                            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                data = Uri.parse("package:${context.packageName}")
+                            }
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Desabilitar otimização de bateria")
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -203,4 +252,9 @@ private fun isNotificationListenerEnabled(context: android.content.Context): Boo
     val cn = ComponentName(context, NotificationCaptureService::class.java)
     val flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
     return flat?.contains(cn.flattenToString()) == true
+}
+
+private fun isBatteryOptimized(context: android.content.Context): Boolean {
+    val pm = context.getSystemService(android.content.Context.POWER_SERVICE) as PowerManager
+    return !pm.isIgnoringBatteryOptimizations(context.packageName)
 }
