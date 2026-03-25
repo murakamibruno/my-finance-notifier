@@ -36,6 +36,12 @@ class MainViewModel @Inject constructor(
     private val _testResult = MutableStateFlow<TestResult?>(null)
     val testResult: StateFlow<TestResult?> = _testResult.asStateFlow()
 
+    private val _retryingIds = MutableStateFlow<Set<Long>>(emptySet())
+    val retryingIds: StateFlow<Set<Long>> = _retryingIds.asStateFlow()
+
+    private val _retryingAll = MutableStateFlow(false)
+    val retryingAll: StateFlow<Boolean> = _retryingAll.asStateFlow()
+
     val isServiceRunning: StateFlow<Boolean> = NotificationCaptureService.isRunning
 
     fun saveWebhookUrl(url: String) {
@@ -82,8 +88,20 @@ class MainViewModel @Inject constructor(
         _testResult.value = null
     }
 
+    fun retrySingle(logId: Long) {
+        viewModelScope.launch {
+            _retryingIds.value = _retryingIds.value + logId
+            notificationRepository.retrySingle(logId)
+            _retryingIds.value = _retryingIds.value - logId
+        }
+    }
+
     fun retryFailed() {
-        viewModelScope.launch { notificationRepository.retryFailed() }
+        viewModelScope.launch {
+            _retryingAll.value = true
+            notificationRepository.retryFailed()
+            _retryingAll.value = false
+        }
     }
 
     fun clearLogs() {
