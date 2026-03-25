@@ -1,13 +1,20 @@
 package com.myfinance.notifier.service
 
 import android.app.Notification
+import android.app.PendingIntent
+import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import com.myfinance.notifier.MyFinanceNotifierApp
+import com.myfinance.notifier.R
 import com.myfinance.notifier.data.local.SettingsDataStore
 import com.myfinance.notifier.data.remote.WebhookPayload
 import com.myfinance.notifier.data.repository.NotificationRepository
 import com.myfinance.notifier.domain.BankApp
+import com.myfinance.notifier.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,14 +39,33 @@ class NotificationCaptureService : NotificationListenerService() {
     companion object {
         private const val TAG = "NotificationCapture"
         private const val DEDUP_WINDOW_MS = 5_000L
+        private const val FOREGROUND_ID = 1
         private val _isRunning = MutableStateFlow(false)
         val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
     }
 
     override fun onListenerConnected() {
         super.onListenerConnected()
+        startForegroundMonitoring()
         _isRunning.value = true
         Log.i(TAG, "NotificationListenerService connected")
+    }
+
+    private fun startForegroundMonitoring() {
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent, PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(this, MyFinanceNotifierApp.MONITORING_CHANNEL_ID)
+            .setContentTitle(getString(R.string.monitoring_notification_title))
+            .setContentText(getString(R.string.monitoring_notification_text))
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentIntent(pendingIntent)
+            .setOngoing(true)
+            .build()
+
+        startForeground(FOREGROUND_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
     }
 
     override fun onListenerDisconnected() {
