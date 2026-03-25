@@ -1,5 +1,6 @@
 package com.myfinance.notifier.ui.screens
 
+import android.content.ComponentName
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
@@ -38,7 +39,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.myfinance.notifier.domain.BankApp
+import com.myfinance.notifier.service.NotificationCaptureService
 import com.myfinance.notifier.ui.MainViewModel
 
 @Composable
@@ -48,8 +52,13 @@ fun SettingsScreen(
     val webhookUrl by viewModel.webhookUrl.collectAsState()
     val enabledBanks by viewModel.enabledBanks.collectAsState()
     val testResult by viewModel.testResult.collectAsState()
-    val serviceRunning by viewModel.isServiceRunning.collectAsState()
     val context = LocalContext.current
+
+    var serviceEnabled by remember { mutableStateOf(isNotificationListenerEnabled(context)) }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        serviceEnabled = isNotificationListenerEnabled(context)
+    }
 
     var urlInput by remember(webhookUrl) { mutableStateOf(webhookUrl) }
 
@@ -69,7 +78,7 @@ fun SettingsScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = if (serviceRunning)
+                containerColor = if (serviceEnabled)
                     Color(0xFF10B981).copy(alpha = 0.1f)
                 else
                     Color(0xFFEF4444).copy(alpha = 0.1f)
@@ -81,15 +90,15 @@ fun SettingsScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(
-                    imageVector = if (serviceRunning)
+                    imageVector = if (serviceEnabled)
                         Icons.Default.CheckCircle else Icons.Default.Error,
                     contentDescription = null,
-                    tint = if (serviceRunning)
+                    tint = if (serviceEnabled)
                         Color(0xFF10B981) else Color(0xFFEF4444),
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = if (serviceRunning)
+                    text = if (serviceEnabled)
                         "Serviço ativo" else "Serviço inativo",
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -188,4 +197,10 @@ fun SettingsScreen(
             Text("Habilitar acesso a notificações")
         }
     }
+}
+
+private fun isNotificationListenerEnabled(context: android.content.Context): Boolean {
+    val cn = ComponentName(context, NotificationCaptureService::class.java)
+    val flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
+    return flat?.contains(cn.flattenToString()) == true
 }

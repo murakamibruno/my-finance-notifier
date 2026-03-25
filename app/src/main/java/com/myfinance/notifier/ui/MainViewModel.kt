@@ -72,11 +72,13 @@ class MainViewModel @Inject constructor(
                     dataHora = System.currentTimeMillis()
                 )
 
-                val response = webhookApi.sendNotification(url, testPayload)
-                _testResult.value = if (response.isSuccessful) {
+                val logId = notificationRepository.send(testPayload)
+                val log = notificationRepository.getLogById(logId)
+
+                _testResult.value = if (log?.status == NotificationLog.STATUS_SENT) {
                     TestResult.Success
                 } else {
-                    TestResult.Error("HTTP ${response.code()}")
+                    TestResult.Error("HTTP ${log?.httpStatus ?: "sem resposta"}")
                 }
             } catch (e: Exception) {
                 _testResult.value = TestResult.Error(e.message ?: "Erro desconhecido")
