@@ -18,12 +18,16 @@ class RetryWorker @AssistedInject constructor(
 
     companion object {
         private const val TAG = "RetryWorker"
+        const val KEY_LOG_ID = "log_id"
     }
 
     override suspend fun doWork(): Result {
         return try {
-            Log.d(TAG, "Retrying failed notifications...")
-            notificationRepository.retryFailed()
+            val logId = inputData.getLong(KEY_LOG_ID, -1L)
+            if (logId != -1L) {
+                Log.d(TAG, "Retrying single notification: $logId")
+                notificationRepository.retrySingle(logId)
+            }
             notificationRepository.cleanupOldLogs()
             Log.d(TAG, "Retry completed")
             Result.success()
