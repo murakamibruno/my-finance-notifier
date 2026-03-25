@@ -7,6 +7,7 @@ enum class BankApp(
 ) {
     NUBANK("com.nu.production", "nubank", "Nubank"),
     BRADESCO("com.bradesco", "bradesco", "Bradesco"),
+    BRADESCO_CARTOES("br.com.bradesco.cartoes", "bradesco", "Bradesco Cartões"),
     C6("com.c6bank.app", "c6", "C6 Bank");
 
     companion object {
