@@ -66,6 +66,22 @@ class NotificationRepository @Inject constructor(
         }
     }
 
+    suspend fun retrySingle(logId: Long) {
+        val entity = dao.getById(logId) ?: return
+        val webhookUrl = settingsRepository.getWebhookUrlSync()
+        try {
+            val payload = WebhookPayload(entity.banco, entity.texto, entity.dataHora)
+            val response = webhookApi.sendNotification(webhookUrl, payload)
+            if (response.isSuccessful) {
+                dao.updateStatus(entity.id, NotificationLog.STATUS_SENT, response.code())
+            } else {
+                dao.updateStatusWithRetry(entity.id, NotificationLog.STATUS_FAILED, response.code())
+            }
+        } catch (e: Exception) {
+            dao.updateStatusWithRetry(entity.id, NotificationLog.STATUS_FAILED, null)
+        }
+    }
+
     suspend fun retryFailed() {
         val failed = dao.getFailed()
         val webhookUrl = settingsRepository.getWebhookUrlSync()

@@ -14,6 +14,9 @@ interface NotificationLogDao {
     @Query("SELECT * FROM notification_log WHERE status = 'FAILED'")
     suspend fun getFailed(): List<NotificationLogEntity>
 
+    @Query("SELECT * FROM notification_log WHERE id = :id")
+    suspend fun getById(id: Long): NotificationLogEntity?
+
     @Insert
     suspend fun insert(entity: NotificationLogEntity): Long
 
