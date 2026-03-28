@@ -117,6 +117,12 @@ class NotificationCaptureService : NotificationListenerService() {
         recentNotifications.entries.removeIf { now - it.value > DEDUP_WINDOW_MS }
     }
 
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        // Re-promote foreground notification when user swipes app from recents
+        startForegroundMonitoring()
+        super.onTaskRemoved(rootIntent)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         scope.cancel()

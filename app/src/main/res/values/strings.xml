@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">My Finance Notifier</string>
+    <string name="app_name">Planance</string>
     <string name="notification_channel_name">Monitoramento ativo</string>
     <string name="notification_channel_description">Notificação persistente enquanto o serviço está monitorando</string>
-    <string name="monitoring_notification_title">My Finance Notifier</string>
+    <string name="monitoring_notification_title">Planance</string>
     <string name="monitoring_notification_text">Monitorando notificações bancárias</string>
     <string name="settings_title">Configurações</string>
     <string name="log_title">Histórico</string>

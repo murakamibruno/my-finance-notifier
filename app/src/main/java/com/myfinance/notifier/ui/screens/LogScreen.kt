@@ -143,10 +143,10 @@ fun LogScreen(
 @Composable
 private fun LogItem(log: NotificationLog, isRetrying: Boolean, onRetry: () -> Unit) {
     val statusColor = when {
-        isRetrying -> Color(0xFFF59E0B)
-        log.status == NotificationLog.STATUS_SENT -> Color(0xFF10B981)
-        log.status == NotificationLog.STATUS_FAILED -> Color(0xFFEF4444)
-        else -> Color(0xFFF59E0B)
+        isRetrying -> Color(0xFFF5C842)
+        log.status == NotificationLog.STATUS_SENT -> MaterialTheme.colorScheme.primary
+        log.status == NotificationLog.STATUS_FAILED -> MaterialTheme.colorScheme.error
+        else -> Color(0xFFF5C842)
     }
 
     val statusText = when {
