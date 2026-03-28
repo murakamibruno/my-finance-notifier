@@ -83,9 +83,9 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
                 containerColor = if (serviceEnabled)
-                    Color(0xFF10B981).copy(alpha = 0.1f)
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                 else
-                    Color(0xFFEF4444).copy(alpha = 0.1f)
+                    MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
             )
         ) {
             Row(
@@ -98,7 +98,7 @@ fun SettingsScreen(
                         Icons.Default.CheckCircle else Icons.Default.Error,
                     contentDescription = null,
                     tint = if (serviceEnabled)
-                        Color(0xFF10B981) else Color(0xFFEF4444),
+                        MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
@@ -173,14 +173,14 @@ fun SettingsScreen(
                 is MainViewModel.TestResult.Success -> {
                     Text(
                         text = "Conexão bem-sucedida!",
-                        color = Color(0xFF10B981),
+                        color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
                 is MainViewModel.TestResult.Error -> {
                     Text(
                         text = "Erro: ${result.message}",
-                        color = Color(0xFFEF4444),
+                        color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -206,7 +206,7 @@ fun SettingsScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFF59E0B).copy(alpha = 0.1f)
+                    containerColor = Color(0xFFF5C842).copy(alpha = 0.1f)
                 )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -217,7 +217,7 @@ fun SettingsScreen(
                         Icon(
                             imageVector = Icons.Default.Error,
                             contentDescription = null,
-                            tint = Color(0xFFF59E0B),
+                            tint = Color(0xFFF5C842),
                             modifier = Modifier.size(24.dp)
                         )
                         Text(

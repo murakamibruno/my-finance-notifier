@@ -12,29 +12,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF1E40AF),
+    primary = Color(0xFF1DAD62),       // Forest Green
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFDBEAFE),
-    secondary = Color(0xFF10B981),
-    background = Color(0xFFF8FAFC),
+    primaryContainer = Color(0xFFEDFDF5),
+    onPrimaryContainer = Color(0xFF04291C),
+    secondary = Color(0xFF6B9FFF),      // Cool Blue
+    background = Color(0xFFF5F7FA),
     surface = Color.White,
-    onSurface = Color(0xFF1E293B)
+    onSurface = Color(0xFF1C2135),
+    onSurfaceVariant = Color(0xFF7A8299),
+    error = Color(0xFFFF6B7A),          // Debit Red
+    onError = Color.White
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF60A5FA),
-    onPrimary = Color(0xFF1E293B),
-    primaryContainer = Color(0xFF1E40AF),
-    secondary = Color(0xFF34D399),
-    background = Color(0xFF0F172A),
-    surface = Color(0xFF1E293B),
-    onSurface = Color(0xFFF1F5F9)
+    primary = Color(0xFF4DFFA0),        // Planance Green
+    onPrimary = Color(0xFF04291C),
+    primaryContainer = Color(0xFF0E4831),
+    onPrimaryContainer = Color(0xFF4DFFA0),
+    secondary = Color(0xFF6B9FFF),      // Cool Blue
+    background = Color(0xFF0E0F11),     // Obsidian
+    surface = Color(0xFF1E2128),        // Slate Dark
+    onSurface = Color(0xFFF0F2F5),      // Ghost White
+    onSurfaceVariant = Color(0xFF7A8299),
+    error = Color(0xFFFF6B7A),          // Debit Red
+    onError = Color(0xFF0E0F11)
 )
 
 @Composable
-fun MyFinanceNotifierTheme(
+fun PlananceTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

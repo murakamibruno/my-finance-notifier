@@ -22,7 +22,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.myfinance.notifier.ui.navigation.AppNavigation
 import com.myfinance.notifier.ui.navigation.Screen
-import com.myfinance.notifier.ui.theme.MyFinanceNotifierTheme
+import com.myfinance.notifier.ui.theme.PlananceTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            MyFinanceNotifierTheme {
+            PlananceTheme {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
