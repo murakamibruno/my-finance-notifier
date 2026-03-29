@@ -24,8 +24,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -47,6 +52,7 @@ import com.myfinance.notifier.domain.BankApp
 import com.myfinance.notifier.service.NotificationCaptureService
 import com.myfinance.notifier.ui.MainViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     viewModel: MainViewModel = hiltViewModel()
@@ -54,6 +60,7 @@ fun SettingsScreen(
     val webhookUrl by viewModel.webhookUrl.collectAsState()
     val enabledBanks by viewModel.enabledBanks.collectAsState()
     val testResult by viewModel.testResult.collectAsState()
+    val testBank by viewModel.testBank.collectAsState()
     val context = LocalContext.current
 
     var serviceEnabled by remember { mutableStateOf(isNotificationListenerEnabled(context)) }
@@ -153,18 +160,61 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Testar conexão
-        Button(
-            onClick = { viewModel.testConnection() },
-            modifier = Modifier.fillMaxWidth()
+        Text(
+            text = "Testar conexão",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        var bankDropdownExpanded by remember { mutableStateOf(false) }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            when (testResult) {
-                is MainViewModel.TestResult.Loading -> {
+            ExposedDropdownMenuBox(
+                expanded = bankDropdownExpanded,
+                onExpandedChange = { bankDropdownExpanded = it },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = testBank.displayName,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Banco") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bankDropdownExpanded) },
+                    modifier = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = bankDropdownExpanded,
+                    onDismissRequest = { bankDropdownExpanded = false }
+                ) {
+                    BankApp.entries.forEach { bank ->
+                        DropdownMenuItem(
+                            text = { Text(bank.displayName) },
+                            onClick = {
+                                viewModel.setTestBank(bank)
+                                bankDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Button(
+                onClick = { viewModel.testConnection() },
+                enabled = testResult !is MainViewModel.TestResult.Loading
+            ) {
+                if (testResult is MainViewModel.TestResult.Loading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         color = MaterialTheme.colorScheme.onPrimary
                     )
+                } else {
+                    Text("Testar")
                 }
-                else -> Text("Testar conexão")
             }
         }
 
