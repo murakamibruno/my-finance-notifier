@@ -6,6 +6,7 @@ import com.myfinance.notifier.data.remote.WebhookApi
 import com.myfinance.notifier.data.remote.WebhookPayload
 import com.myfinance.notifier.data.repository.NotificationRepository
 import com.myfinance.notifier.data.repository.SettingsRepository
+import com.myfinance.notifier.domain.BankApp
 import com.myfinance.notifier.domain.NotificationLog
 import com.myfinance.notifier.service.NotificationCaptureService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,6 +36,13 @@ class MainViewModel @Inject constructor(
 
     private val _testResult = MutableStateFlow<TestResult?>(null)
     val testResult: StateFlow<TestResult?> = _testResult.asStateFlow()
+
+    private val _testBank = MutableStateFlow(BankApp.entries.first())
+    val testBank: StateFlow<BankApp> = _testBank.asStateFlow()
+
+    fun setTestBank(bank: BankApp) {
+        _testBank.value = bank
+    }
 
     private val _retryingIds = MutableStateFlow<Set<Long>>(emptySet())
     val retryingIds: StateFlow<Set<Long>> = _retryingIds.asStateFlow()
@@ -67,8 +75,8 @@ class MainViewModel @Inject constructor(
                 }
 
                 val testPayload = WebhookPayload(
-                    banco = "bradesco",
-                    texto = "Compra de R$ 100,00 APROVADA em LOJA TESTE, no Cartão final 1114.",
+                    banco = _testBank.value.bancoKey,
+                    texto = "Compra aprovada no crédito de R$ 100,00 em LOJA TESTE",
                     dataHora = System.currentTimeMillis()
                 )
 
