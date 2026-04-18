@@ -37,6 +37,9 @@ class MainViewModel @Inject constructor(
     private val _testResult = MutableStateFlow<TestResult?>(null)
     val testResult: StateFlow<TestResult?> = _testResult.asStateFlow()
 
+    private val _urlSaved = MutableStateFlow(false)
+    val urlSaved: StateFlow<Boolean> = _urlSaved.asStateFlow()
+
     private val _testBank = MutableStateFlow(BankApp.entries.first())
     val testBank: StateFlow<BankApp> = _testBank.asStateFlow()
 
@@ -53,7 +56,14 @@ class MainViewModel @Inject constructor(
     val isServiceRunning: StateFlow<Boolean> = NotificationCaptureService.isRunning
 
     fun saveWebhookUrl(url: String) {
-        viewModelScope.launch { settingsRepository.saveWebhookUrl(url) }
+        viewModelScope.launch {
+            settingsRepository.saveWebhookUrl(url)
+            _urlSaved.value = true
+        }
+    }
+
+    fun clearUrlSaved() {
+        _urlSaved.value = false
     }
 
     fun toggleBank(bankName: String, enabled: Boolean) {
