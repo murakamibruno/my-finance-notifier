@@ -1,10 +1,14 @@
 package com.myfinance.notifier.ui.screens
 
+import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,20 +39,24 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.myfinance.notifier.domain.BankApp
+import com.myfinance.notifier.domain.SourceType
 import com.myfinance.notifier.service.NotificationCaptureService
 import com.myfinance.notifier.ui.MainViewModel
 
@@ -61,10 +69,26 @@ fun SettingsScreen(
     val enabledBanks by viewModel.enabledBanks.collectAsState()
     val testResult by viewModel.testResult.collectAsState()
     val testBank by viewModel.testBank.collectAsState()
+    val urlSaved by viewModel.urlSaved.collectAsState()
+
+    LaunchedEffect(urlSaved) {
+        if (urlSaved) {
+            delay(2000)
+            viewModel.clearUrlSaved()
+        }
+    }
     val context = LocalContext.current
 
     var serviceEnabled by remember { mutableStateOf(isNotificationListenerEnabled(context)) }
     var batteryOptimized by remember { mutableStateOf(isBatteryOptimized(context)) }
+
+    val smsPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            viewModel.toggleBank(BankApp.BRADESCO_SMS.name, true)
+        }
+    }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         serviceEnabled = isNotificationListenerEnabled(context)
@@ -131,7 +155,15 @@ fun SettingsScreen(
             onClick = { viewModel.saveWebhookUrl(urlInput) },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Salvar")
+            if (urlSaved) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+            } else {
+                Text("Salvar")
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -150,7 +182,18 @@ fun SettingsScreen(
                 Checkbox(
                     checked = bank.name in enabledBanks,
                     onCheckedChange = { checked ->
-                        viewModel.toggleBank(bank.name, checked)
+                        if (bank.sourceType == SourceType.SMS && checked) {
+                            if (ContextCompat.checkSelfPermission(
+                                    context, Manifest.permission.RECEIVE_SMS
+                                ) == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                viewModel.toggleBank(bank.name, true)
+                            } else {
+                                smsPermissionLauncher.launch(Manifest.permission.RECEIVE_SMS)
+                            }
+                        } else {
+                            viewModel.toggleBank(bank.name, checked)
+                        }
                     }
                 )
                 Text(text = bank.displayName)
